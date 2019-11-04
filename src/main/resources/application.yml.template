@@ -1,0 +1,23 @@
+server:
+  port: [port]
+spring:
+  application:
+    name: imustacm-gateway
+  security:
+    user:
+      name: []
+      password: []
+
+eureka:
+  client:
+    service-url:
+      defaultZone: http://${spring.security.user.name}:${spring.security.user.password}@[ip]:[port]/eureka
+
+zuul:
+  routes:
+    user-service:
+      path: /user/**
+      serviceId: imustacm-user-service
+    problem-service:
+      path: /problem/**
+      serviceId: imustacm-problem-service
