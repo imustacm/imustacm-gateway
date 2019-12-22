@@ -3,7 +3,7 @@ package cn.imustacm.gateway.filter;
 import com.netflix.zuul.ZuulFilter;
 import com.netflix.zuul.exception.ZuulException;
 
-public class TokenFilter extends ZuulFilter {
+public class JwtFilter extends ZuulFilter {
 
     /**
      * 过滤器类型
