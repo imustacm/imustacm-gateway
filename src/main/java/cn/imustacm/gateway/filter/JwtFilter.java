@@ -14,12 +14,14 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.http.HttpStatus;
+import org.springframework.stereotype.Component;
 
 import javax.servlet.http.HttpServletRequest;
 
 import static org.springframework.http.HttpStatus.OK;
 
 @Slf4j
+@Component
 public class JwtFilter extends ZuulFilter {
 
 
@@ -65,7 +67,7 @@ public class JwtFilter extends ZuulFilter {
     @Override
     public boolean shouldFilter() {
 
-        return false;
+        return true;
     }
 
     /**
@@ -81,12 +83,14 @@ public class JwtFilter extends ZuulFilter {
         String servletPath = request.getServletPath();
 
         // 获取token 并去掉token
-        String token = request.getHeader(GlobalConst.JWT_HEADER).substring(GlobalConst.JWT_PREFIX.length());
-        log.info("[jwtFilter] servletPath:{} token:{}", servletPath, token);
+        String token = request.getHeader(GlobalConst.JWT_HEADER);
         if (StringUtils.isEmpty(token)) {
             tokenNullHandler();
             return null;
         }
+        token = token.substring(GlobalConst.JWT_PREFIX.length());
+        log.info("[jwtFilter] servletPath:{} token:{}", servletPath, token);
+
         boolean expiredStatus = jwtUtils.tokenExpiredStatus(token);
         if (!expiredStatus) {
             tokenExpiredHandler();
