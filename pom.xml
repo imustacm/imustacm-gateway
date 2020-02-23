@@ -12,6 +12,11 @@
 
     <artifactId>imustacm-gateway</artifactId>
 
+
+
+    <properties>
+        <imustacm-common>1.0.0</imustacm-common>
+    </properties>
     <dependencies>
         <dependency>
             <groupId>org.springframework.cloud</groupId>
@@ -21,6 +26,11 @@
         <dependency>
             <groupId>org.springframework.cloud</groupId>
             <artifactId>spring-cloud-starter-netflix-zuul</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>cn.imustacm</groupId>
+            <artifactId>imustacm-common</artifactId>
+            <version>${imustacm-common}</version>
         </dependency>
     </dependencies>
 
