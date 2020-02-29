@@ -18,6 +18,8 @@ import org.springframework.stereotype.Component;
 
 import javax.servlet.http.HttpServletRequest;
 
+import java.util.Objects;
+
 import static org.springframework.http.HttpStatus.OK;
 
 @Slf4j
@@ -82,27 +84,37 @@ public class JwtFilter extends ZuulFilter {
         HttpServletRequest request = currentContext.getRequest();
         String servletPath = request.getServletPath();
 
-        // 获取token 并去掉token
+        // 获取token
         String token = request.getHeader(GlobalConst.JWT_HEADER);
         if (StringUtils.isEmpty(token)) {
             tokenNullHandler();
             return null;
         }
-        token = token.substring(GlobalConst.JWT_PREFIX.length());
-        log.info("[jwtFilter] servletPath:{} token:{}", servletPath, token);
+        String userId = null;
+        try {
+            // 去掉token前缀
+            token = token.substring(GlobalConst.JWT_PREFIX.length());
+            log.info("[jwtFilter] servletPath:{} token:{}", servletPath, token);
 
-        boolean expiredStatus = jwtUtils.tokenExpiredStatus(token);
-        if (!expiredStatus) {
-            tokenExpiredHandler();
-            return null;
+            boolean expiredStatus = jwtUtils.tokenExpiredStatus(token);
+            if (!expiredStatus) {
+                tokenExpiredHandler();
+                return null;
+            }
+            userId = jwtUtils.getUserId(token);
+        } catch (Exception e) {
+            tokenIllegal();
         }
-
-        String userId = jwtUtils.getUserId(token);
-
+        if (Objects.isNull(userId)) {
+            tokenIllegal();
+        }
         currentContext.addZuulRequestHeader(GlobalConst.USER_ID_HEADER, userId);
         return null;
     }
 
+    /**
+     * token失效
+     */
     private void tokenExpiredHandler(){
         exceptionHandler(new Resp(ErrorCodeEnum.USER_TOKEN_EXPIRED), OK);
     }
@@ -112,6 +124,10 @@ public class JwtFilter extends ZuulFilter {
      */
     private void tokenNullHandler() {
         exceptionHandler(new Resp(ErrorCodeEnum.USER_TOKEN_NULL), OK);
+    }
+
+    private void tokenIllegal(){
+        exceptionHandler(new Resp(ErrorCodeEnum.USER_TOKEN_ILLEGAL),OK);
     }
 
     /**
