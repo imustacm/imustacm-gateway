@@ -1,6 +1,7 @@
 package cn.imustacm.gateway.filter;
 
 import cn.imustacm.common.consts.GlobalConst;
+import cn.imustacm.gateway.domain.Path;
 import cn.imustacm.common.domain.Resp;
 import cn.imustacm.common.enums.ErrorCodeEnum;
 import cn.imustacm.common.utils.JwtUtils;
@@ -36,6 +37,9 @@ public class JwtFilter extends ZuulFilter {
     @Autowired
     private JwtUtils jwtUtils;
 
+    @Autowired
+    private Path path;
+
     @Bean
     public JwtUtils jwtUtils() {
         return new JwtUtils(jwtSecretKey, Long.parseLong(jwtExpireTime));
@@ -68,7 +72,13 @@ public class JwtFilter extends ZuulFilter {
      */
     @Override
     public boolean shouldFilter() {
-
+        RequestContext currentContext = RequestContext.getCurrentContext();
+        HttpServletRequest request = currentContext.getRequest();
+        String servletPath = request.getServletPath();
+        for(String p : path.getExclusionPath()) {
+            if(p.equals(servletPath))
+                return false;
+        }
         return true;
     }
 
