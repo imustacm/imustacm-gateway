@@ -5,13 +5,25 @@ spring:
     name: imustacm-gateway
   security:
     user:
-      name: []
-      password: []
+      name: [name]
+      password: [password]
+  redis:
+    database: [database]
+    host: [host]
+    port: [port]
+    password: [password]
+    timeout: 30s
+    jedis:
+      pool:
+        max-wait: 30s
+        max-active: 1
+        max-idle: 1
+        min-idle: 1
 
 eureka:
   client:
     service-url:
-      defaultZone: http://${spring.security.user.name}:${spring.security.user.password}@[ip]:[port]/eureka
+      defaultZone: http://${spring.security.user.name}:${spring.security.user.password}@localhost:6868/eureka
 
 zuul:
   routes:
@@ -21,3 +33,17 @@ zuul:
     problem-service:
       path: /problem/**
       serviceId: imustacm-problem-service
+
+permission-config:
+  perms:
+    - url: /
+      permission: update_problem
+    - url: /dog
+jwt:
+  secret-key: [secret-key]
+  header: Authorization
+  prefix: 'Bearer'
+  expire-time: 3600000
+  exclusionPath:
+    - /problem/problem/listProblems
+    - /user/verification/get
