@@ -16,6 +16,7 @@
 
     <properties>
         <imustacm-common>1.0.0</imustacm-common>
+        <imustacm-user-api>1.0.0</imustacm-user-api>
     </properties>
     <dependencies>
         <dependency>
@@ -35,6 +36,16 @@
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-data-redis</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.cloud</groupId>
+            <artifactId>spring-cloud-starter-openfeign</artifactId>
+            <version>2.0.0.RELEASE</version>
+        </dependency>
+        <dependency>
+            <groupId>cn.imustacm</groupId>
+            <artifactId>imustacm-user-api</artifactId>
+            <version>${imustacm-user-api}</version>
         </dependency>
         <dependency>
             <groupId>redis.clients</groupId>
