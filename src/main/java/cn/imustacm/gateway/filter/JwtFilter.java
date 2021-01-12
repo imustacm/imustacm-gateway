@@ -1,6 +1,7 @@
 package cn.imustacm.gateway.filter;
 
 import cn.imustacm.common.consts.GlobalConst;
+import cn.imustacm.gateway.client.InterfacePermissionClient;
 import cn.imustacm.gateway.domain.Path;
 import cn.imustacm.common.domain.Resp;
 import cn.imustacm.common.enums.ErrorCodeEnum;
@@ -9,6 +10,7 @@ import com.alibaba.fastjson.JSON;
 import com.netflix.zuul.ZuulFilter;
 import com.netflix.zuul.context.RequestContext;
 import com.netflix.zuul.exception.ZuulException;
+import io.jsonwebtoken.Claims;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,6 +22,7 @@ import org.springframework.stereotype.Component;
 import javax.servlet.http.HttpServletRequest;
 
 import java.util.Objects;
+import java.util.Set;
 
 import static org.springframework.http.HttpStatus.OK;
 
@@ -39,6 +42,9 @@ public class JwtFilter extends ZuulFilter {
 
     @Autowired
     private Path path;
+
+    @Autowired
+    private InterfacePermissionClient interfacePermissionClient;
 
     @Bean
     public JwtUtils jwtUtils() {
@@ -94,7 +100,7 @@ public class JwtFilter extends ZuulFilter {
         HttpServletRequest request = currentContext.getRequest();
         String servletPath = request.getServletPath();
 
-        // 获取token
+        // 1 获取token
         String token = request.getHeader(GlobalConst.JWT_HEADER);
         if (StringUtils.isEmpty(token)) {
             tokenNullHandler();
@@ -105,13 +111,18 @@ public class JwtFilter extends ZuulFilter {
             // 去掉token前缀
             token = token.substring(GlobalConst.JWT_PREFIX.length());
             log.info("[jwtFilter] servletPath:{} token:{}", servletPath, token);
-
+            // 2 校验token是否过期
             boolean expiredStatus = jwtUtils.tokenExpiredStatus(token);
             if (!expiredStatus) {
                 tokenExpiredHandler();
                 return null;
             }
             userId = jwtUtils.getUserId(token);
+            // 3 权限校验
+            boolean permissionFlag = checkPermission(servletPath, token);
+            if(!permissionFlag){
+                noPermissionHandler();
+            }
         } catch (Exception e) {
             tokenIllegal();
         }
@@ -123,10 +134,39 @@ public class JwtFilter extends ZuulFilter {
     }
 
     /**
+     * 接口权限校验
+     *
+     * @param servletPath
+     * @return
+     */
+    private boolean checkPermission(String servletPath, String token) {
+        // 1 获取能访问当前接口的权限set
+        Set permissionSet = interfacePermissionClient.getInterfacePermissionSet(servletPath);
+        // 2 获取用户权限列表
+        Claims claimFromToken = jwtUtils.getClaimFromToken(token);
+        String permissionNameListStr = (String) claimFromToken.get(GlobalConst.PERMISSION_NAME_LIST);
+        String[] userPermissionNameArray = permissionNameListStr.split(",");
+        for (String userPermission : userPermissionNameArray) {
+            if (permissionSet.contains(userPermission)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+
+    /**
      * token失效
      */
     private void tokenExpiredHandler(){
         exceptionHandler(new Resp(ErrorCodeEnum.USER_TOKEN_EXPIRED), OK);
+    }
+
+    /**
+     * token失效
+     */
+    private void noPermissionHandler(){
+        exceptionHandler(new Resp(ErrorCodeEnum.FORBIDDEN), OK);
     }
 
     /**
