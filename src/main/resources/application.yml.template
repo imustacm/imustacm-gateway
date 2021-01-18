@@ -12,18 +12,22 @@ spring:
     host: [host]
     port: [port]
     password: [password]
-    timeout: 30s
+    timeout: 10000
     jedis:
       pool:
-        max-wait: 30s
-        max-active: 1
-        max-idle: 1
-        min-idle: 1
+        max-wait: -1
+        max-active: 300
+        max-idle: 32
+        min-idle: 0
 
 eureka:
   client:
     service-url:
-      defaultZone: http://${spring.security.user.name}:${spring.security.user.password}@localhost:6868/eureka
+      defaultZone: http://${spring.security.user.name}:${spring.security.user.password}@backend-eureka:6868/eureka
+
+ribbon:
+  ReadTimeout: 50000
+  ConnectTimeout: 10000
 
 zuul:
   routes:
@@ -34,16 +38,13 @@ zuul:
       path: /problem/**
       serviceId: imustacm-problem-service
 
-permission-config:
-  perms:
-    - url: /
-      permission: update_problem
-    - url: /dog
 jwt:
   secret-key: [secret-key]
   header: Authorization
   prefix: 'Bearer'
-  expire-time: 3600000
+  expire-time: 6000000
   exclusionPath:
     - /problem/problem/listProblems
     - /user/verification/get
+    - /user/user/login
+    - /user/user/getLoginInfo
