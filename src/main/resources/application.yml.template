@@ -32,19 +32,19 @@ ribbon:
 zuul:
   routes:
     user-service:
-      path: /user/**
+      path: /api/user/**
       serviceId: imustacm-user-service
     problem-service:
-      path: /problem/**
+      path: /api/problem/**
       serviceId: imustacm-problem-service
 
 jwt:
   secret-key: [secret-key]
-  header: Authorization
-  prefix: 'Bearer'
+  header: accessToken
+  prefix: ''
   expire-time: 6000000
   exclusionPath:
-    - /problem/problem/listProblems
-    - /user/verification/get
-    - /user/user/login
-    - /user/user/getLoginInfo
+    - /api/problem/problem/listProblems
+    - /api/user/verification/get
+    - /api/user/user/login
+    - /api/user/user/getLoginInfo
