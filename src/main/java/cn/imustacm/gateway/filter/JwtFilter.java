@@ -159,7 +159,7 @@ public class JwtFilter extends ZuulFilter {
      * token失效
      */
     private void tokenExpiredHandler(){
-        exceptionHandler(new Resp(ErrorCodeEnum.USER_TOKEN_EXPIRED), OK);
+        exceptionHandler(new Resp(ErrorCodeEnum.FORBIDDEN), OK);
     }
 
     /**
@@ -173,11 +173,11 @@ public class JwtFilter extends ZuulFilter {
      * token为null
      */
     private void tokenNullHandler() {
-        exceptionHandler(new Resp(ErrorCodeEnum.USER_TOKEN_NULL), OK);
+        exceptionHandler(new Resp(ErrorCodeEnum.FORBIDDEN), OK);
     }
 
     private void tokenIllegal(){
-        exceptionHandler(new Resp(ErrorCodeEnum.USER_TOKEN_ILLEGAL),OK);
+        exceptionHandler(new Resp(ErrorCodeEnum.FORBIDDEN),OK);
     }
 
     /**
