@@ -41,7 +41,6 @@ zuul:
 jwt:
   secret-key: [secret-key]
   header: accessToken
-  prefix: ''
   expire-time: 6000000
   exclusionPath:
     - /api/problem/problem/listProblems
