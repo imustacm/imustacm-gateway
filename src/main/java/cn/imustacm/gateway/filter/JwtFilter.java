@@ -108,8 +108,6 @@ public class JwtFilter extends ZuulFilter {
         }
         String userId = null;
         try {
-            // 去掉token前缀
-            token = token.substring(GlobalConst.JWT_PREFIX.length());
             log.info("[jwtFilter] servletPath:{} token:{}", servletPath, token);
             // 2 校验token是否过期
             boolean expiredStatus = jwtUtils.tokenExpiredStatus(token);
