@@ -141,6 +141,8 @@ public class JwtFilter extends ZuulFilter {
         // 1 获取能访问当前接口的权限set
         Set permissionSet = interfacePermissionClient.getInterfacePermissionSet(servletPath);
         log.info("checkPermission interface permissionSet:{}",permissionSet);
+        if(permissionSet.isEmpty())
+            return true;
         // 2 获取用户权限列表
         Claims claimFromToken = jwtUtils.getClaimFromToken(token);
         String permissionNameListStr = (String) claimFromToken.get(GlobalConst.PERMISSION_NAME_LIST);
