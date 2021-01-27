@@ -81,8 +81,8 @@ public class JwtFilter extends ZuulFilter {
         RequestContext currentContext = RequestContext.getCurrentContext();
         HttpServletRequest request = currentContext.getRequest();
         String servletPath = request.getServletPath();
-        for(String p : path.getExclusionPath()) {
-            if(p.equals(servletPath))
+        for (String p : path.getExclusionPath()) {
+            if (p.equals(servletPath))
                 return false;
         }
         return true;
@@ -118,13 +118,15 @@ public class JwtFilter extends ZuulFilter {
             userId = jwtUtils.getUserId(token);
             // 3 权限校验
             boolean permissionFlag = checkPermission(servletPath, token);
-            if(!permissionFlag){
+            if (!permissionFlag) {
                 noPermissionHandler();
             }
         } catch (Exception e) {
+            log.error("JwtFilter Exception:{}", e.toString());
             tokenIllegal();
         }
         if (Objects.isNull(userId)) {
+            log.error("JwtFilter userId is null!");
             tokenIllegal();
         }
         currentContext.addZuulRequestHeader(GlobalConst.USER_ID_HEADER, userId);
@@ -140,14 +142,14 @@ public class JwtFilter extends ZuulFilter {
     private boolean checkPermission(String servletPath, String token) {
         // 1 获取能访问当前接口的权限set
         Set permissionSet = interfacePermissionClient.getInterfacePermissionSet(servletPath);
-        log.info("checkPermission interface permissionSet:{}",permissionSet);
-        if(permissionSet.isEmpty())
+        log.info("checkPermission interface permissionSet:{}", permissionSet);
+        if (permissionSet.isEmpty())
             return true;
         // 2 获取用户权限列表
         Claims claimFromToken = jwtUtils.getClaimFromToken(token);
         String permissionNameListStr = (String) claimFromToken.get(GlobalConst.PERMISSION_NAME_LIST);
         String[] userPermissionNameArray = permissionNameListStr.split(",");
-        log.info("checkPermission user permissionList:{}",userPermissionNameArray);
+        log.info("checkPermission user permissionList:{}", userPermissionNameArray);
         for (String userPermission : userPermissionNameArray) {
             if (permissionSet.contains(userPermission)) {
                 return true;
@@ -160,14 +162,14 @@ public class JwtFilter extends ZuulFilter {
     /**
      * token失效
      */
-    private void tokenExpiredHandler(){
-        exceptionHandler(new Resp(ErrorCodeEnum.EXPIRED), OK);
+    private void tokenExpiredHandler() {
+        exceptionHandler(new Resp(ErrorCodeEnum.FORBIDDEN), OK);
     }
 
     /**
      * token失效
      */
-    private void noPermissionHandler(){
+    private void noPermissionHandler() {
         exceptionHandler(new Resp(ErrorCodeEnum.FORBIDDEN), OK);
     }
 
@@ -178,8 +180,8 @@ public class JwtFilter extends ZuulFilter {
         exceptionHandler(new Resp(ErrorCodeEnum.FORBIDDEN), OK);
     }
 
-    private void tokenIllegal(){
-        exceptionHandler(new Resp(ErrorCodeEnum.EXPIRED),OK);
+    private void tokenIllegal() {
+        exceptionHandler(new Resp(ErrorCodeEnum.FORBIDDEN), OK);
     }
 
     /**
